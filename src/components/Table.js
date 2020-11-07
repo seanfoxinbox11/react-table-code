@@ -7,17 +7,23 @@ import './Table.css';
 function Table(props) {
 
   const [filter, setFilter] = useState({
+    text: "",
     page: 1,
   });
+
+  const [searchText, setSearchText] = useState("");
+  
 
   const {desiredHeadings, restaurants} = props;
 
   const [headings, setHeadings] = useState(null);
-  //const [restaurants, setRestaurants] = useState(null);
+
   const [filteredRestaurants, setFilteredRestaurants] = useState(null);
 
   const [filterOptions, setFilterOptions] = useState(null);
 
+
+  const [filtersEnabled, setFiltersEnabled] = useState(true);
   
   useEffect(() => {
     if (restaurants) {
@@ -83,9 +89,36 @@ function Table(props) {
       return; // escape out of useEffect
     }
 
-    
-  
+    const searchableHeadings = headings?.filter(heading => heading.isSearchable);
+
+    const filterText = searchableHeadings?.length && filter.text.toLowerCase().trim();
+
     let filteredRestaurants = sortedRestaurants?.filter(restaurant => {
+      if(!filtersEnabled) {
+        return true; // escape out of useEffect
+      }
+
+      if(filterText){
+        
+        const matchesText = searchableHeadings.find(({dataProperty}) => {
+          return restaurant[dataProperty].toLowerCase().includes(filterText);
+        });
+        if(!matchesText) return false;
+
+        /*
+        for(let heading of searchableHeadings){
+          const {dataProperty} = heading;
+          const restaurantValue = restaurant[dataProperty].toLowerCase();
+          console.log('match text', filterText, '---', restaurantValue)
+          if(!restaurantValue.includes(filterText)){
+            return false;
+          }
+        }
+        */
+
+
+      }
+
       for(let heading of filterableHeadings){
         const {dataProperty} = heading;
         const filterValue = filter[dataProperty];
@@ -122,12 +155,43 @@ function Table(props) {
     ////[filterResults] //which are set in the state
 
   
-  }, [restaurants, headings, filter]);
+  }, [restaurants, headings, filter, filtersEnabled]);
 
+
+
+  const onSearchChange = (event) => {
+    setSearchText(event.target.value);
+  }
+
+  
+
+  const onSearchSubmit = (event) => {
+    event.preventDefault();
+
+    setFilter(filter => ({...filter,
+      text: searchText
+    }))
+
+  }
+
+
+  const onFiltersCheckBoxChange = (event) => {
+    setFiltersEnabled(event.target.checked);
+  }
 
   return (
-    <div className="App">
-      
+    <div>
+      <label><input type="checkbox" checked={filtersEnabled} onChange={onFiltersCheckBoxChange}/> Enable Filters </label>
+      <form onSubmit={onSearchSubmit}>
+        <input 
+				className="searchInput" 
+				type="text" 
+				value={searchText} 
+				onChange={onSearchChange}								
+			  />	
+        <input type="Submit"  />
+      </form>
+
       <table>
         <thead>
           <tr className="table-heading">

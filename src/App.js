@@ -4,11 +4,11 @@ import Table from './components/Table';
 
 // • A user should be able to see a table with the name, city, state, phone number, and genres for each restaurant.
 const desiredHeadings = [
-  { dataProperty: "name", isFilterable: false, sortBy: true},
-  { dataProperty: "city", isFilterable: false },
+  { dataProperty: "name", isFilterable: false, isSearchable: true, sortBy: true},
+  { dataProperty: "city", isFilterable: false, isSearchable: true, },
   { dataProperty: "state", isFilterable: true },
   { dataProperty: "telephone", isFilterable: false },
-  { dataProperty: "genre", isFilterable: true },
+  { dataProperty: "genre", isFilterable: true, isSearchable: true, },
   { dataProperty: "attire", isFilterable: true },
 ];
 
