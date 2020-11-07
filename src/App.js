@@ -3,15 +3,15 @@ import { useEffect } from 'react';
 import './App.css';
 
 
+const headings = [
+  { label: "Name", dataProperty: "name" },
+  { label: "Address", dataProperty: "address1" },
+  { label: "City", dataProperty: "city" },
+  { label: "State", dataProperty: "state" },
+];
+
 function App() {
 
-  const headings = [
-    { label: "ID", dataProperty: "id" },
-    { label: "Name", dataProperty: "name" },
-    { label: "Address", dataProperty: "address1" },
-    { label: "City", dataProperty: "city" },
-    { label: "State", dataProperty: "state" },
-  ];
 
   const [restaurants, setRestaurants] = useState(null);
 
@@ -35,15 +35,35 @@ function App() {
   return (
     <div className="App">
       <table>
-        <tr>
-          {
-            headings.map((heading) => {
-              return <td key={heading.id}>{heading.label}</td>
-            })
-          }
-        </tr>
+        <thead>
+          <tr>
+            {
+              headings.map((heading) => {
+                return <td key={heading.dataProperty}>{heading.label}</td>
+              })
+            }
+          </tr>
+        </thead>
+
+        <tbody>
+        { 
+          restaurants?.map((restaurant) => {
+            return (
+              <tr key={restaurant.id}>
+                {
+                  headings.map((heading) => {
+                    return <td key={heading.dataProperty}>{ restaurant[heading.dataProperty] }</td>
+                  })
+                }
+              </tr>)
+          })        
+        }
+        </tbody>
+
       </table>
     </div>
   );
 }
 export default App;
+
+// {id: "f223fdd0-4adc-423e-9747-980a66c256ca", name: "Old Hickory Steakhouse", address1: "201 Waterfront St", city: "Oxon Hill", state: "MD", …}
