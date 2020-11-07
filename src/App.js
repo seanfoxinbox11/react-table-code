@@ -16,7 +16,7 @@ const desiredHeadings = [
 function App() {
 
   const [filter, setFilter] = useState({
-    genre: null,
+    
     text: '',
     page: 1,
   });
@@ -77,41 +77,55 @@ function App() {
 
 
   useEffect(() => {
-      let filteredRestaurants = restaurants?.filter(restaurant => {
-        let matchesFilter = true;
-        return matchesFilter;
-      });
-
-      // isFilterable
-
-      let filterOptions = {
-      };
-
-      const filterableHeadings = headings?.filter(heading => heading.isFilterable);
-      filterableHeadings.forEach(({dataProperty}) => {
-        //heading.dataProperty;
-        if(!filterOptions[dataProperty]){ 
-          filterOptions[dataProperty] = []; 
+    const filterableHeadings = headings?.filter(heading => heading.isFilterable);
+  
+    let filteredRestaurants = restaurants?.filter(restaurant => {
+      for(let heading of filterableHeadings){
+        const {dataProperty} = heading;
+        const filterValue = filter[dataProperty];
+        if(filterValue!='All'){
+          const restaurantValues = restaurant[dataProperty].split(',');
+          const matches = restaurantValues.find(restaurantValue => restaurantValue.toLowerCase()===filterValue.toLowerCase());
+          if(!matches) {
+            return false;
+          }
         }
+      }
+      return true;
+    });
 
-        filteredRestaurants.forEach(restaurant => {
-          let values = restaurant[dataProperty].split(',');
-          values.forEach(value => filterOptions[dataProperty].find(filterOption => value.toLowerCase() === filterOption.toLowerCase()) || filterOptions[dataProperty].push(value))
+
+    let filterOptions = {};   
+    filterableHeadings?.forEach(({dataProperty}) => {
+      //heading.dataProperty;
+      if(!filterOptions[dataProperty]){ 
+        filterOptions[dataProperty] = ['All']; 
+      }
+
+      filteredRestaurants?.forEach(restaurant => {
+        let values = restaurant[dataProperty].split(',');
+        values.forEach(value => filterOptions[dataProperty].find(filterOption => value.toLowerCase() === filterOption.toLowerCase()) || filterOptions[dataProperty].push(value))
+      });
+    });
+
+    // set filter defaults
+    if(filterableHeadings && !filter[filterableHeadings[0].dataProperty] ){
+      setFilter(filter => {
+        let filterDefaults = {};
+        filterableHeadings.forEach(({dataProperty}) => {
+          if(!filter[dataProperty]) filterDefaults[dataProperty] = 'All';
         });
-      })
-      
-      console.log({filterOptions})
-      setFilterOptions(filterOptions);
-
-      
-      // TODO: get only results for this page with .slice
-
-      ////[filterResults] //which are set in the state
-      setFilteredRestaurants(filteredRestaurants);
+        return {...filter, ...filterDefaults};
+      });
     }
+      
+    setFilterOptions(filterOptions);
+    
+    // TODO: get only results for this page with .slice
 
-  , [restaurants, headings, filter.genre, filter.text, filter.page]
-  );
+    ////[filterResults] //which are set in the state
+    setFilteredRestaurants(filteredRestaurants);
+  }, [restaurants, headings, filter]);
 
 
   return (
@@ -131,16 +145,20 @@ function App() {
         <tbody>
           <tr className="table-row">
             {
-              headings?.map((heading) => {
+              headings?.map(({dataProperty, isFilterable}) => {
                 return (
-                  <td key={heading.dataProperty}>
+                  <td key={dataProperty}>
 
                     {
-                      heading.isFilterable ?
+                      isFilterable && filter[dataProperty] ?
 
-                        <select>
+                        <select value={filter[dataProperty]} onChange={(event) => {
+                          setFilter(filter => ({...filter,
+                            [dataProperty]: event.target.value
+                          }))
+                        }}>
                            {
-                              filterOptions && filterOptions[heading.dataProperty].map((option) => {
+                              filterOptions && filterOptions[dataProperty]?.map((option) => {
                                 return <option key={option} value={option}>{option}</option>
                               }) 
                             }
