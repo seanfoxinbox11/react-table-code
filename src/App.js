@@ -1,25 +1,49 @@
-import logo from './logo.svg';
+import { useState } from 'react';
+import { useEffect } from 'react';
 import './App.css';
 
+
 function App() {
+
+  const headings = [
+    { label: "ID", dataProperty: "id" },
+    { label: "Name", dataProperty: "name" },
+    { label: "Address", dataProperty: "address1" },
+    { label: "City", dataProperty: "city" },
+    { label: "State", dataProperty: "state" },
+  ];
+
+  const [restaurants, setRestaurants] = useState(null);
+
+  useEffect(() => {
+
+    // load restaurant data
+    fetch('https://code-challenge.spectrumtoolbox.com/api/restaurants', {
+      headers: {
+        Authorization: 'Api-Key q3MNxtfep8Gt',
+      },
+    })
+    .then((response) => response.json())
+    .then((restaurants) => {
+      console.log(restaurants);
+
+      setRestaurants(restaurants);
+    });
+  }, []);
+
+
   return (
     <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+      <table>
+        <tr>
+          {
+            headings.map((heading) => {
+              return <td key={heading.id}>{heading.label}</td>
+            })
+          }
+        </tr>
+      </table>
     </div>
   );
 }
-
 export default App;
