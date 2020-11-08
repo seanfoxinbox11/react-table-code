@@ -4,6 +4,7 @@ import './Table.css';
 
 
 
+
 function Table(props) {
 
   const [filter, setFilter] = useState({
@@ -11,10 +12,10 @@ function Table(props) {
     page: 1,
   });
 
-  const [searchText, setSearchText] = useState("");
+  
   
 
-  const {desiredHeadings, restaurants} = props;
+  const {headingData, restaurants} = props;
 
   const [headings, setHeadings] = useState(null);
 
@@ -29,7 +30,7 @@ function Table(props) {
     if (restaurants) {
 
       const headingKeys = Object.keys(restaurants[0]);
-        const includedHeadings = desiredHeadings.filter((desiredHeading) => {
+        const includedHeadings = headingData.filter((desiredHeading) => {
           return !!headingKeys.find(key => desiredHeading.dataProperty === key);
         });  
         //console.log("includedHeadings", includedHeadings)
@@ -91,17 +92,17 @@ function Table(props) {
 
     const searchableHeadings = headings?.filter(heading => heading.isSearchable);
 
-    const filterText = searchableHeadings?.length && filter.text.toLowerCase().trim();
+    const filterTextToLower = searchableHeadings?.length && filter.text.toLowerCase().trim();
 
     let filteredRestaurants = sortedRestaurants?.filter(restaurant => {
       if(!filtersEnabled) {
         return true; // escape out of useEffect
       }
 
-      if(filterText){
+      if(filterTextToLower){
         
         const matchesText = searchableHeadings.find(({dataProperty}) => {
-          return restaurant[dataProperty].toLowerCase().includes(filterText);
+          return restaurant[dataProperty].toLowerCase().includes(filterTextToLower);
         });
         if(!matchesText) return false;
 
@@ -109,8 +110,8 @@ function Table(props) {
         for(let heading of searchableHeadings){
           const {dataProperty} = heading;
           const restaurantValue = restaurant[dataProperty].toLowerCase();
-          console.log('match text', filterText, '---', restaurantValue)
-          if(!restaurantValue.includes(filterText)){
+          console.log('match text', filterTextToLower, '---', restaurantValue)
+          if(!restaurantValue.includes(filterTextToLower)){
             return false;
           }
         }
@@ -158,21 +159,14 @@ function Table(props) {
   }, [restaurants, headings, filter, filtersEnabled]);
 
 
-
-  const onSearchChange = (event) => {
-    setSearchText(event.target.value);
-  }
-
-  
-
-  const onSearchSubmit = (event) => {
-    event.preventDefault();
+  useEffect(() => {
 
     setFilter(filter => ({...filter,
-      text: searchText
+      text: props.filterText
     }))
 
-  }
+  }, [props.filterText]);
+
 
 
   const onFiltersCheckBoxChange = (event) => {
@@ -182,15 +176,8 @@ function Table(props) {
   return (
     <div>
       <label><input type="checkbox" checked={filtersEnabled} onChange={onFiltersCheckBoxChange}/> Enable Filters </label>
-      <form onSubmit={onSearchSubmit}>
-        <input 
-				className="searchInput" 
-				type="text" 
-				value={searchText} 
-				onChange={onSearchChange}								
-			  />	
-        <input type="Submit"  />
-      </form>
+      
+
 
       <table>
         <thead>
