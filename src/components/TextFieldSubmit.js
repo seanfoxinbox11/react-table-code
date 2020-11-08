@@ -15,6 +15,9 @@ function TextFieldSubmit(props) {
     props.submitCallback(text);
   }
 
+  // • A user should be able to enter text into a search field.
+  // • When hitting the enter key or clicking on a search button, the table should search results. 
+
   return (
     <div>      
       <form onSubmit={onSubmit}>

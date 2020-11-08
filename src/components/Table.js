@@ -1,123 +1,98 @@
-import { useState } from 'react';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import './Table.css';
 
-
-
-
+/** 
+* Table functional component
+* @param {object} props - object with values passed in as props
+*/
 function Table(props) {
+
+  const { headingData, rows, filterText, filtersEnabled } = props;
+  const [headings, setHeadings] = useState(null);
+  const [filteredRows, setFilteredRows] = useState(null);
+  const [filterOptions, setFilterOptions] = useState(null);
 
   const [filter, setFilter] = useState({
     text: "",
     page: 1,
   });
 
-  
-  
-
-  const {headingData, rows} = props;
-
-  const [headings, setHeadings] = useState(null);
-
-  const [filteredRows, setFilteredRows] = useState(null);
-
-  const [filterOptions, setFilterOptions] = useState(null);
+  const defaultFilterValue = "All";
 
 
-  const [filtersEnabled, setFiltersEnabled] = useState(true);
-  
+  /** 
+  * Initialize table headings when row prop updates
+  */
   useEffect(() => {
-    if (rows) {
-
-      const headingKeys = Object.keys(rows[0]);
-        const includedHeadings = headingData.filter((headingData) => {
-          return !!headingKeys.find(key => headingData.dataProperty === key);
-        });  
-        //console.log("includedHeadings", includedHeadings)
-
-
-        setHeadings(includedHeadings);
-    }
-                 
+    initHeadings();
   }, [rows]);
 
-  const getSortRows = (rows, key, direction) => {
+  const initHeadings = () => {
+    if (rows) {
+      const headingKeys = Object.keys(rows[0]);
+      const includedHeadings = headingData.filter((headingData) => {
+        return !!headingKeys.find(key => headingData.dataProperty === key);
+      });
 
-    const clonedRows = [...rows];
-    return clonedRows.sort((a, b) => { 
-        let valueA = a[key].toUpperCase();
-        let valueB = b[key].toUpperCase(); 
-        if (valueA < valueB) {
-          return -direction;
-        }
-        if (valueA > valueB) {
-          return direction;
-        }
-
-        // names are equal
-        return 0;
-
-    });
-
+      setHeadings(includedHeadings);
+    }
   }
 
 
+
+
   useEffect(() => {
 
-    if(!headings || !rows) return; // escape out of useEffect
-
-    console.log(headings, rows);
-
-
-
-    const sortByHeading = headings.find((heading) => {
-      return !!heading.sortBy;
-    });
-     // • A user should see results sorted by name in alphabetical order starting with the beginning of the alphabet
-    const sortedRows = getSortRows(rows, sortByHeading.dataProperty, 1);
-
+    if (!headings || !rows) return; // escape useEffect
+   
+    const sortedRows = getSortRows(rows, 1);
+   
     const filterableHeadings = headings?.filter(heading => heading.isFilterable);
 
-    // set filter defaults
-    if(filterableHeadings && !filter[filterableHeadings[0].dataProperty] ){
+    // Set Filter Default Values
+    // • State and Genre filters should default to “All” and take effect instantaneously (no additional clicks).
+    if (filterableHeadings && !filter[filterableHeadings[0].dataProperty]) {
       setFilter(filter => {
         let filterDefaults = {};
-        filterableHeadings.forEach(({dataProperty}) => {
-          if(!filter[dataProperty]) filterDefaults[dataProperty] = 'All';
+        filterableHeadings.forEach(({ dataProperty }) => {
+          if (!filter[dataProperty]) filterDefaults[dataProperty] = defaultFilterValue;
         });
-        return {...filter, ...filterDefaults};
+        return { ...filter, ...filterDefaults };
       });
-      return; // escape out of useEffect
+      return; // escape useEffect
     }
+
+    
 
     const searchableHeadings = headings?.filter(heading => heading.isSearchable);
 
     const filterTextToLower = searchableHeadings?.length && filter.text.toLowerCase().trim();
 
     let filteredRows = sortedRows?.filter(rowData => {
-      if(!filtersEnabled) {
-        return true; // escape out of useEffect
+      if (!filtersEnabled) {
+        return true; // escape useEffect
       }
 
-      if(filterTextToLower){
-        
-        const matchesText = searchableHeadings.find(({dataProperty}) => {
+      if (filterTextToLower) {      
+        // • Search results should match either the name, city, or genre.
+        // • A user should be able to clear the search by clearing the text value in the search input.
+        const matchesText = searchableHeadings.find(({ dataProperty }) => {
           return rowData[dataProperty].toLowerCase().includes(filterTextToLower);
         });
-        if(!matchesText) return false;
-
-     
-
-
+        if (!matchesText) return false;
       }
 
-      for(let heading of filterableHeadings){
-        const {dataProperty} = heading;
+
+      // • A user should be able to filter restaurants by state
+      // • A user should be able to filter by genre.
+      // • Add filter for attire
+      for (let heading of filterableHeadings) {
+        const { dataProperty } = heading;
         const filterValue = filter[dataProperty];
-        if(filterValue != 'All'){
+        if (filterValue != defaultFilterValue) {
           const cellValues = rowData[dataProperty].split(',');
-          const matches = cellValues.find(cellValue => cellValue.toLowerCase()===filterValue.toLowerCase());
-          if(!matches) {
+          const matches = cellValues.find(cellValue => cellValue.toLowerCase() === filterValue.toLowerCase());
+          if (!matches) {
             return false;
           }
         }
@@ -127,11 +102,12 @@ function Table(props) {
     setFilteredRows(filteredRows);
 
 
-    let filterOptions = {};   
-    filterableHeadings?.forEach(({dataProperty}) => {
+
+    let filterOptions = {};
+    filterableHeadings?.forEach(({ dataProperty }) => {
       //heading.dataProperty;
-      if(!filterOptions[dataProperty]){ 
-        filterOptions[dataProperty] = ['All']; 
+      if (!filterOptions[dataProperty]) {
+        filterOptions[dataProperty] = [defaultFilterValue];
       }
 
       filteredRows?.forEach(rowData => {
@@ -141,96 +117,125 @@ function Table(props) {
     });
     setFilterOptions(filterOptions);
 
-      
+
     // TODO: get only results for this page with .slice
 
     ////[filterResults] //which are set in the state
 
-  
-  }, [rows, headings, filter, filtersEnabled]);
+
+  }, [headings, filter, filtersEnabled]);
 
 
+  /** 
+  * Updates the text property on filter state property
+  */
   useEffect(() => {
 
-    setFilter(filter => ({...filter,
-      text: props.filterText
+    setFilter(filter => ({
+      ...filter,
+      text: filterText
     }))
 
-  }, [props.filterText]);
+  }, [filterText]);
 
 
+  /** 
+  * Returns a cloned array of the rows sorted by on specific property
+  * @param {array} rows - row datas to be sorted
+  * @param {number} direction - the direction in which to sort the rows take 1 or -1
+  */
+  const getSortRows = (rows, direction) => {
+    // • A user should see results sorted by name in alphabetical order starting with the beginning of the alphabet
+    const sortByHeading = headings.find((heading) => {
+      return !!heading.sortBy; 
+    });    
 
-  const onFiltersCheckBoxChange = (event) => {
-    setFiltersEnabled(event.target.checked);
+    const clonedRows = [...rows];
+    return clonedRows.sort((rowA, rowB) => {
+      let valueA = rowA[sortByHeading.dataProperty].toUpperCase();
+      let valueB = rowB[sortByHeading.dataProperty].toUpperCase();
+     
+      if (valueA < valueB) {
+        return -direction;
+      }
+      if (valueA > valueB) {
+        return direction;
+      }
+
+      return 0; // the values are equal
+    });
   }
 
+
+  /** 
+  * Updates the specific filter state value which the ui select is associated with.  
+  * @param {event} event - the event which triggered the call
+  * @param {string} dataProperty - the name of the property which is being filtered on
+  */
+  const applyFilter = (event, dataProperty) => {
+
+    console.log(dataProperty)
+      setFilter(filter => ({
+        ...filter,
+        [dataProperty]: event.target.value
+      }))
+  }
+
+  // • A user should be able to see a table with the name, city, state, phone number, and genres for each restaurant.
+
   return (
-    <div>
-      <label><input type="checkbox" checked={filtersEnabled} onChange={onFiltersCheckBoxChange}/> Enable Filters </label>
-      
+    <table>
+      <thead>
+        <tr className="table-heading">
+        {
+          headings?.map((heading) => {
+            return <td key={heading.dataProperty}>{heading.dataProperty}</td>
+          })
+        }
+        </tr>
+      </thead>
 
-
-      <table>
-        <thead>
-          <tr className="table-heading">
-            {
-              headings?.map((heading) => {
-                return <td key={heading.dataProperty}>{heading.dataProperty}</td>
-              })
-            }
-          </tr>
-        </thead>
-
-        <tbody>
-          <tr className="table-row">
-            {
-              headings?.map(({dataProperty, isFilterable}) => {
-                return (
-                  <td key={dataProperty}>
-
-                    {
-                      isFilterable && filter[dataProperty] ?
-
-                        <select value={filter[dataProperty]} onChange={(event) => {
-                          setFilter(filter => ({...filter,
-                            [dataProperty]: event.target.value
-                          }))
-                        }}>
-                           {
-                              filterOptions && filterOptions[dataProperty]?.map((option) => {
-                                return <option key={option} value={option}>{option}</option>
-                              }) 
-                            }
-                        </select>
-
-                        :
-                        null
-
-                    }
-                  </td>
-                )
-              })
-            }
-          </tr>
-        </tbody>
-
-        <tbody>
-          {
-            filteredRows?.map((rowData) => {
-              return (
-                <tr key={rowData.id} className="table-row">
+      <tbody>
+        <tr className="table-row">
+        {
+          headings?.map(({ dataProperty, isFilterable }) => {
+            return (
+              <td key={dataProperty}>
+              {
+                isFilterable && filter[dataProperty] && filtersEnabled ?
+                  
+                  <select value={filter[dataProperty]} onChange={(event)=>{ applyFilter(event, dataProperty) }}>
                   {
-                    headings.map((heading) => {
-                      return <td key={heading.dataProperty}>{rowData[heading.dataProperty]}</td>
+                    filterOptions && filterOptions[dataProperty]?.map((option) => {
+                      return <option key={option} value={option}>{option}</option>
                     })
                   }
-                </tr>)
-            })
-          }
-        </tbody>
+                  </select>
+                  :
+                  null
+              }
+              </td>
+            )
+          })
+        }
+        </tr>
+      </tbody>
 
-      </table>
-    </div>
+      <tbody>
+      {
+        filteredRows?.map((rowData) => {
+          return (
+            <tr key={rowData.id} className="table-row">
+            {
+              headings.map((heading) => {
+                return <td key={heading.dataProperty}>{rowData[heading.dataProperty]}</td>
+              })
+            }
+            </tr>)
+        })
+      }
+      </tbody>
+    </table>
   );
 }
 export default Table;
