@@ -130,10 +130,7 @@ export default App;
 
 
 
-
-
-
-//Sort the drop down lists
+// 2 casuals
 
 // fix shutting off filters makes it so search does not calculate
 
@@ -145,13 +142,14 @@ export default App;
 
 // • A user should only see 10 results at a time and the table should be paginated.
 
-//Perhaps change the filter reducing it to almost nothing to always showing the options
 
 
 
-//clean up and comment anything that change on monday
+
+
 // put comments at the bottom here saying which featur bullets are included
-//Comment
+// Clean/ Comment
+// Clean up and comment anything that change on monday
 // • Full Git history with atomic commits
 // • Deployed application
 // QA functionality per bullet at the end

@@ -21,10 +21,10 @@ function Table(props) {
 
 
   /** 
-  * Build table headings when row prop updates
+  * Set table headings when row prop updates
   */
   useEffect(() => {
-    // Build headings
+    // set headings
     if (rows) {
       const headingKeys = Object.keys(rows[0]);
       const includedHeadings = headingData.filter((headingData) => {
@@ -33,6 +33,8 @@ function Table(props) {
       setHeadings(includedHeadings);
     }
   }, [rows]);
+
+
 
 
   useEffect(() => {
@@ -61,7 +63,11 @@ function Table(props) {
         let values = rowData[dataProperty].split(',');
         values.forEach(value => filterOptions[dataProperty].find(filterOption => value.toLowerCase() === filterOption.toLowerCase()) || filterOptions[dataProperty].push(value))
       });
+
+      // Sort filter options
+      filterOptions[dataProperty].sort();
     });
+
     setFilterOptions(filterOptions);
   }, [rows, headings]);
 
@@ -144,6 +150,8 @@ function Table(props) {
 
     return getdSortedClonedArray(rows, sortByHeading.dataProperty, direction);
   }
+
+  
 
   const getdSortedClonedArray = (array, key, direction) => {
     const clonedArray = [...array];
