@@ -26,24 +26,22 @@ function App() {
   const [searchText, setSearchText] = useState("");
   const [filtersEnabled, setFiltersEnabled] = useState(true);
 
-  /** 
-  * Load restaurant data
-  */
-  useEffect(() => {      
-      loadRestaurantData();
-  }, []);
 
-  const loadRestaurantData = () => {
-    fetch(urlInfo.url, {
-      headers: {
-        Authorization: urlInfo.authorization,
-      },
-    })
+  useEffect(() => {      
+      // Load restaurant data
+      fetch(urlInfo.url, {
+        headers: {
+          Authorization: urlInfo.authorization,
+        },
+      })
       .then((response) => response.json())
       .then((restaurants) => {
         setRestaurants(restaurants);     
+      })
+      .catch((err) => {
+        console.log(err);
       });
-  }
+  }, []);
 
 
   /** 
@@ -130,7 +128,12 @@ export default App;
 ////////////////////////////////
 
 
-// clean up and comment big table function
+
+
+
+
+
+//Sort the drop down lists
 
 // fix shutting off filters makes it so search does not calculate
 
@@ -148,6 +151,7 @@ export default App;
 
 //clean up and comment anything that change on monday
 // put comments at the bottom here saying which featur bullets are included
+//Comment
 // • Full Git history with atomic commits
 // • Deployed application
 // QA functionality per bullet at the end

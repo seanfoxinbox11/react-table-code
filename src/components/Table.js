@@ -17,63 +17,70 @@ function Table(props) {
     page: 1,
   });
 
-  const defaultFilterValue = "All";
+  const defaultFilterOptionValue = "All";
 
 
   /** 
-  * Initialize table headings when row prop updates
+  * Build table headings when row prop updates
   */
   useEffect(() => {
-    initHeadings();
-  }, [rows]);
-
-  const initHeadings = () => {
+    // Build headings
     if (rows) {
       const headingKeys = Object.keys(rows[0]);
       const includedHeadings = headingData.filter((headingData) => {
         return !!headingKeys.find(key => headingData.dataProperty === key);
       });
-
       setHeadings(includedHeadings);
     }
-  }
-
-
+  }, [rows]);
 
 
   useEffect(() => {
-
-    if (!headings || !rows) return; // escape useEffect
-   
-    const sortedRows = getSortRows(rows, 1);
-   
     const filterableHeadings = headings?.filter(heading => heading.isFilterable);
 
-    // Set Filter Default Values
+    // Set Filter options default values
     // • State and Genre filters should default to “All” and take effect instantaneously (no additional clicks).
     if (filterableHeadings && !filter[filterableHeadings[0].dataProperty]) {
       setFilter(filter => {
         let filterDefaults = {};
         filterableHeadings.forEach(({ dataProperty }) => {
-          if (!filter[dataProperty]) filterDefaults[dataProperty] = defaultFilterValue;
+          if (!filter[dataProperty]) filterDefaults[dataProperty] = defaultFilterOptionValue;
         });
         return { ...filter, ...filterDefaults };
       });
-      return; // escape useEffect
     }
 
-    
-
-    const searchableHeadings = headings?.filter(heading => heading.isSearchable);
-
-    const filterTextToLower = searchableHeadings?.length && filter.text.toLowerCase().trim();
-
-    let filteredRows = sortedRows?.filter(rowData => {
-      if (!filtersEnabled) {
-        return true; // escape useEffect
+    // Set filter option values
+    let filterOptions = {};
+    filterableHeadings?.forEach(({ dataProperty }) => {
+      if (!filterOptions[dataProperty]) {
+        filterOptions[dataProperty] = [defaultFilterOptionValue];
       }
 
-      if (filterTextToLower) {      
+      rows?.forEach(rowData => {
+        let values = rowData[dataProperty].split(',');
+        values.forEach(value => filterOptions[dataProperty].find(filterOption => value.toLowerCase() === filterOption.toLowerCase()) || filterOptions[dataProperty].push(value))
+      });
+    });
+    setFilterOptions(filterOptions);
+  }, [rows, headings]);
+
+
+  useEffect(() => {
+
+    const filterableHeadings = headings?.filter(heading => heading.isFilterable);
+
+    if (!headings || !rows || !filter || !filter[filterableHeadings[0].dataProperty]) return; // escape useEffect
+
+    const sortedRows = getSortedRows(rows, headings, 1);
+    let filteredRows = sortedRows?.filter(rowData => {
+      if (!filtersEnabled) {
+        return true;
+      }
+
+      const searchableHeadings = headings?.filter(heading => heading.isSearchable);
+      const filterTextToLower = searchableHeadings?.length && filter.text.toLowerCase().trim();
+      if (filterTextToLower) {
         // • Search results should match either the name, city, or genre.
         // • A user should be able to clear the search by clearing the text value in the search input.
         const matchesText = searchableHeadings.find(({ dataProperty }) => {
@@ -89,7 +96,8 @@ function Table(props) {
       for (let heading of filterableHeadings) {
         const { dataProperty } = heading;
         const filterValue = filter[dataProperty];
-        if (filterValue != defaultFilterValue) {
+
+        if (filterValue != defaultFilterOptionValue) {
           const cellValues = rowData[dataProperty].split(',');
           const matches = cellValues.find(cellValue => cellValue.toLowerCase() === filterValue.toLowerCase());
           if (!matches) {
@@ -103,27 +111,11 @@ function Table(props) {
 
 
 
-    let filterOptions = {};
-    filterableHeadings?.forEach(({ dataProperty }) => {
-      //heading.dataProperty;
-      if (!filterOptions[dataProperty]) {
-        filterOptions[dataProperty] = [defaultFilterValue];
-      }
-
-      filteredRows?.forEach(rowData => {
-        let values = rowData[dataProperty].split(',');
-        values.forEach(value => filterOptions[dataProperty].find(filterOption => value.toLowerCase() === filterOption.toLowerCase()) || filterOptions[dataProperty].push(value))
-      });
-    });
-    setFilterOptions(filterOptions);
-
-
     // TODO: get only results for this page with .slice
 
     ////[filterResults] //which are set in the state
 
-
-  }, [headings, filter, filtersEnabled]);
+  }, [rows, headings, filter, filtersEnabled]);
 
 
   /** 
@@ -144,17 +136,21 @@ function Table(props) {
   * @param {array} rows - row datas to be sorted
   * @param {number} direction - the direction in which to sort the rows take 1 or -1
   */
-  const getSortRows = (rows, direction) => {
+  const getSortedRows = (rows, headings, direction) => {
     // • A user should see results sorted by name in alphabetical order starting with the beginning of the alphabet
     const sortByHeading = headings.find((heading) => {
-      return !!heading.sortBy; 
-    });    
+      return !!heading.sortBy;
+    });
 
-    const clonedRows = [...rows];
-    return clonedRows.sort((rowA, rowB) => {
-      let valueA = rowA[sortByHeading.dataProperty].toUpperCase();
-      let valueB = rowB[sortByHeading.dataProperty].toUpperCase();
-     
+    return getdSortedClonedArray(rows, sortByHeading.dataProperty, direction);
+  }
+
+  const getdSortedClonedArray = (array, key, direction) => {
+    const clonedArray = [...array];
+    return clonedArray.sort((itemA, itemB) => {
+      let valueA = itemA[key].toUpperCase();
+      let valueB = itemB[key].toUpperCase();
+
       if (valueA < valueB) {
         return -direction;
       }
@@ -175,10 +171,10 @@ function Table(props) {
   const applyFilter = (event, dataProperty) => {
 
     console.log(dataProperty)
-      setFilter(filter => ({
-        ...filter,
-        [dataProperty]: event.target.value
-      }))
+    setFilter(argFilter => ({
+      ...argFilter,
+      [dataProperty]: event.target.value
+    }));
   }
 
   // • A user should be able to see a table with the name, city, state, phone number, and genres for each restaurant.
@@ -187,53 +183,53 @@ function Table(props) {
     <table>
       <thead>
         <tr className="table-heading">
-        {
-          headings?.map((heading) => {
-            return <td key={heading.dataProperty}>{heading.dataProperty}</td>
-          })
-        }
+          {
+            headings?.map((heading) => {
+              return <td key={heading.dataProperty}>{heading.dataProperty}</td>
+            })
+          }
         </tr>
       </thead>
 
       <tbody>
         <tr className="table-row">
-        {
-          headings?.map(({ dataProperty, isFilterable }) => {
-            return (
-              <td key={dataProperty}>
-              {
-                isFilterable && filter[dataProperty] && filtersEnabled ?
-                  
-                  <select value={filter[dataProperty]} onChange={(event)=>{ applyFilter(event, dataProperty) }}>
+          {
+            headings?.map(({ dataProperty, isFilterable }) => {
+              return (
+                <td key={dataProperty}>
                   {
-                    filterOptions && filterOptions[dataProperty]?.map((option) => {
-                      return <option key={option} value={option}>{option}</option>
-                    })
+                    isFilterable && filter[dataProperty] && filtersEnabled ?
+
+                      <select value={filter[dataProperty]} onChange={(event) => { applyFilter(event, dataProperty) }}>
+                        {
+                          filterOptions && filterOptions[dataProperty]?.map((option) => {
+                            return <option key={option} value={option}>{option}</option>
+                          })
+                        }
+                      </select>
+                      :
+                      null
                   }
-                  </select>
-                  :
-                  null
-              }
-              </td>
-            )
-          })
-        }
+                </td>
+              )
+            })
+          }
         </tr>
       </tbody>
 
       <tbody>
-      {
-        filteredRows?.map((rowData) => {
-          return (
-            <tr key={rowData.id} className="table-row">
-            {
-              headings.map((heading) => {
-                return <td key={heading.dataProperty}>{rowData[heading.dataProperty]}</td>
-              })
-            }
-            </tr>)
-        })
-      }
+        {
+          filteredRows?.map((rowData) => {
+            return (
+              <tr key={rowData.id} className="table-row">
+                {
+                  headings.map((heading) => {
+                    return <td key={heading.dataProperty}>{rowData[heading.dataProperty]}</td>
+                  })
+                }
+              </tr>)
+          })
+        }
       </tbody>
     </table>
   );
