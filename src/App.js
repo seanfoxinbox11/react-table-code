@@ -44,7 +44,7 @@ function App() {
   return (
     <div>
       <TextField submitCallback={onSearchSubmit} />
-      <Table headingData={headingData} restaurants={restaurants} filterText={searchText} />
+      <Table headingData={headingData} rows={restaurants} filterText={searchText} />
     </div>
   );
 }

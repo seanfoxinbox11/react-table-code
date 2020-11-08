@@ -15,11 +15,11 @@ function Table(props) {
   
   
 
-  const {headingData, restaurants} = props;
+  const {headingData, rows} = props;
 
   const [headings, setHeadings] = useState(null);
 
-  const [filteredRestaurants, setFilteredRestaurants] = useState(null);
+  const [filteredRows, setFilteredRows] = useState(null);
 
   const [filterOptions, setFilterOptions] = useState(null);
 
@@ -27,11 +27,11 @@ function Table(props) {
   const [filtersEnabled, setFiltersEnabled] = useState(true);
   
   useEffect(() => {
-    if (restaurants) {
+    if (rows) {
 
-      const headingKeys = Object.keys(restaurants[0]);
-        const includedHeadings = headingData.filter((desiredHeading) => {
-          return !!headingKeys.find(key => desiredHeading.dataProperty === key);
+      const headingKeys = Object.keys(rows[0]);
+        const includedHeadings = headingData.filter((headingData) => {
+          return !!headingKeys.find(key => headingData.dataProperty === key);
         });  
         //console.log("includedHeadings", includedHeadings)
 
@@ -39,12 +39,12 @@ function Table(props) {
         setHeadings(includedHeadings);
     }
                  
-  }, [restaurants]);
+  }, [rows]);
 
-  const getSortRestaurants = (restaurants, key, direction) => {
+  const getSortRows = (rows, key, direction) => {
 
-    const clonedRestaurants = [...restaurants];
-    return clonedRestaurants.sort((a, b) => { 
+    const clonedRows = [...rows];
+    return clonedRows.sort((a, b) => { 
         let valueA = a[key].toUpperCase();
         let valueB = b[key].toUpperCase(); 
         if (valueA < valueB) {
@@ -64,9 +64,9 @@ function Table(props) {
 
   useEffect(() => {
 
-    if(!headings || !restaurants) return; // escape out of useEffect
+    if(!headings || !rows) return; // escape out of useEffect
 
-    console.log(headings, restaurants);
+    console.log(headings, rows);
 
 
 
@@ -74,7 +74,7 @@ function Table(props) {
       return !!heading.sortBy;
     });
      // • A user should see results sorted by name in alphabetical order starting with the beginning of the alphabet
-    const sortedRestaurants = getSortRestaurants(restaurants, sortByHeading.dataProperty, 1);
+    const sortedRows = getSortRows(rows, sortByHeading.dataProperty, 1);
 
     const filterableHeadings = headings?.filter(heading => heading.isFilterable);
 
@@ -94,7 +94,7 @@ function Table(props) {
 
     const filterTextToLower = searchableHeadings?.length && filter.text.toLowerCase().trim();
 
-    let filteredRestaurants = sortedRestaurants?.filter(restaurant => {
+    let filteredRows = sortedRows?.filter(rowData => {
       if(!filtersEnabled) {
         return true; // escape out of useEffect
       }
@@ -102,20 +102,11 @@ function Table(props) {
       if(filterTextToLower){
         
         const matchesText = searchableHeadings.find(({dataProperty}) => {
-          return restaurant[dataProperty].toLowerCase().includes(filterTextToLower);
+          return rowData[dataProperty].toLowerCase().includes(filterTextToLower);
         });
         if(!matchesText) return false;
 
-        /*
-        for(let heading of searchableHeadings){
-          const {dataProperty} = heading;
-          const restaurantValue = restaurant[dataProperty].toLowerCase();
-          console.log('match text', filterTextToLower, '---', restaurantValue)
-          if(!restaurantValue.includes(filterTextToLower)){
-            return false;
-          }
-        }
-        */
+     
 
 
       }
@@ -124,8 +115,8 @@ function Table(props) {
         const {dataProperty} = heading;
         const filterValue = filter[dataProperty];
         if(filterValue != 'All'){
-          const restaurantValues = restaurant[dataProperty].split(',');
-          const matches = restaurantValues.find(restaurantValue => restaurantValue.toLowerCase()===filterValue.toLowerCase());
+          const cellValues = rowData[dataProperty].split(',');
+          const matches = cellValues.find(cellValue => cellValue.toLowerCase()===filterValue.toLowerCase());
           if(!matches) {
             return false;
           }
@@ -133,7 +124,7 @@ function Table(props) {
       }
       return true;
     });
-    setFilteredRestaurants(filteredRestaurants);
+    setFilteredRows(filteredRows);
 
 
     let filterOptions = {};   
@@ -143,8 +134,8 @@ function Table(props) {
         filterOptions[dataProperty] = ['All']; 
       }
 
-      filteredRestaurants?.forEach(restaurant => {
-        let values = restaurant[dataProperty].split(',');
+      filteredRows?.forEach(rowData => {
+        let values = rowData[dataProperty].split(',');
         values.forEach(value => filterOptions[dataProperty].find(filterOption => value.toLowerCase() === filterOption.toLowerCase()) || filterOptions[dataProperty].push(value))
       });
     });
@@ -156,7 +147,7 @@ function Table(props) {
     ////[filterResults] //which are set in the state
 
   
-  }, [restaurants, headings, filter, filtersEnabled]);
+  }, [rows, headings, filter, filtersEnabled]);
 
 
   useEffect(() => {
@@ -225,12 +216,12 @@ function Table(props) {
 
         <tbody>
           {
-            filteredRestaurants?.map((restaurant) => {
+            filteredRows?.map((rowData) => {
               return (
-                <tr key={restaurant.id} className="table-row">
+                <tr key={rowData.id} className="table-row">
                   {
                     headings.map((heading) => {
-                      return <td key={heading.dataProperty}>{restaurant[heading.dataProperty]}</td>
+                      return <td key={heading.dataProperty}>{rowData[heading.dataProperty]}</td>
                     })
                   }
                 </tr>)
