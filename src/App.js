@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import Table from './components/Table';
-import TextField from './components/TextFieldSubmit';
+import TextFieldSubmit from './components/TextFieldSubmit';
 
 
 /** 
@@ -25,6 +25,7 @@ function App() {
   const [restaurants, setRestaurants] = useState(null);
   const [searchText, setSearchText] = useState("");
   const [filtersEnabled, setFiltersEnabled] = useState(true);
+
 
 
   useEffect(() => {      
@@ -58,9 +59,10 @@ function App() {
     setFiltersEnabled(event.target.checked);
   }
 
+
   return (
     <div>
-      <TextField submitCallback={onSearchSubmit} /> 
+      <TextFieldSubmit submitCallback={onSearchSubmit} /> 
       <label>
         <input 
           type="checkbox" 
@@ -130,7 +132,7 @@ export default App;
 
 
 
-// 2 casuals
+
 
 // fix shutting off filters makes it so search does not calculate
 
@@ -140,11 +142,12 @@ export default App;
 
 // • If any of the filters do not return any restaurants, the UI should indicate that no results were found.
 
-// • A user should only see 10 results at a time and the table should be paginated.
 
 
 
+// css enhancements
 
+// 3 talres for the price of 1
 
 
 // put comments at the bottom here saying which featur bullets are included
@@ -152,6 +155,6 @@ export default App;
 // Clean up and comment anything that change on monday
 // • Full Git history with atomic commits
 // • Deployed application
-// QA functionality per bullet at the end
+// QA functionality per bullet at the end, qa code for mutation and dependencies
 
 /////////////////////////

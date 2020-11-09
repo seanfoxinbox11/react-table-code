@@ -12,9 +12,12 @@ function Table(props) {
   const [filteredRows, setFilteredRows] = useState(null);
   const [filterOptions, setFilterOptions] = useState(null);
 
+  const [pagination, setPagination] = useState(1);
+  const [filteredRowsLength, setFilteredRowsLength] = useState(0);
+
+  const resultMax = 10;
   const [filter, setFilter] = useState({
     text: "",
-    page: 1,
   });
 
   const defaultFilterOptionValue = "All";
@@ -56,7 +59,7 @@ function Table(props) {
     let filterOptions = {};
     filterableHeadings?.forEach(({ dataProperty }) => {
       if (!filterOptions[dataProperty]) {
-        filterOptions[dataProperty] = [defaultFilterOptionValue];
+        filterOptions[dataProperty] = [];
       }
 
       rows?.forEach(rowData => {
@@ -66,6 +69,8 @@ function Table(props) {
 
       // Sort filter options
       filterOptions[dataProperty].sort();
+
+      filterOptions[dataProperty].unshift(defaultFilterOptionValue);     
     });
 
     setFilterOptions(filterOptions);
@@ -113,15 +118,19 @@ function Table(props) {
       }
       return true;
     });
-    setFilteredRows(filteredRows);
 
 
+    // • A user should only see 10 results at a time and the table should be paginated.
+    const paginationStart = (pagination * resultMax) - resultMax;    
+    const paginationEnd = paginationStart + resultMax;
 
-    // TODO: get only results for this page with .slice
+    const paginatedRows = filteredRows.slice(paginationStart, paginationEnd);
 
-    ////[filterResults] //which are set in the state
+    setFilteredRowsLength(filteredRows.length);
 
-  }, [rows, headings, filter, filtersEnabled]);
+    setFilteredRows(paginatedRows);
+
+  }, [rows, headings, filter, filtersEnabled, pagination]);
 
 
   /** 
@@ -185,61 +194,79 @@ function Table(props) {
     }));
   }
 
+
+  const onPaginationButtonClick = (direction) => (event) => {
+   
+    const paginationMin = 1;
+    const paginationMax = filteredRowsLength / resultMax; 
+    const incrementedPagination = pagination + direction;
+
+    if (direction === -1 && pagination > 1 || direction === 1 && pagination < paginationMax) { 
+        setPagination(incrementedPagination);
+    } 
+  }
+
+
   // • A user should be able to see a table with the name, city, state, phone number, and genres for each restaurant.
 
   return (
-    <table>
-      <thead>
-        <tr className="table-heading">
-          {
-            headings?.map((heading) => {
-              return <td key={heading.dataProperty}>{heading.dataProperty}</td>
-            })
-          }
-        </tr>
-      </thead>
+    <div>
+      <button onClick={onPaginationButtonClick(-1)}>Left</button>
+      <button onClick={onPaginationButtonClick(1)}>Right</button>
 
-      <tbody>
-        <tr className="table-row">
+      <table>
+        <thead>
+          <tr className="table-heading">
+            {
+              headings?.map((heading) => {
+                return <td key={heading.dataProperty}>{heading.dataProperty}</td>
+              })
+            }
+          </tr>
+        </thead>
+
+        <tbody>
+          <tr className="table-row">
+            {
+              headings?.map(({ dataProperty, isFilterable }) => {
+                return (
+                  <td key={dataProperty}>
+                    {
+                      isFilterable && filter[dataProperty] && filtersEnabled ?
+
+                        <select value={filter[dataProperty]} onChange={(event) => { applyFilter(event, dataProperty) }}>
+                          {
+                            filterOptions && filterOptions[dataProperty]?.map((option) => {
+                              return <option key={option} value={option}>{option}</option>
+                            })
+                          }
+                        </select>
+                        :
+                        null
+                    }
+                  </td>
+                )
+              })
+            }
+          </tr>
+        </tbody>
+
+        <tbody>
           {
-            headings?.map(({ dataProperty, isFilterable }) => {
+            filteredRows?.map((rowData) => {
               return (
-                <td key={dataProperty}>
+                <tr key={rowData.id} className="table-row">
                   {
-                    isFilterable && filter[dataProperty] && filtersEnabled ?
-
-                      <select value={filter[dataProperty]} onChange={(event) => { applyFilter(event, dataProperty) }}>
-                        {
-                          filterOptions && filterOptions[dataProperty]?.map((option) => {
-                            return <option key={option} value={option}>{option}</option>
-                          })
-                        }
-                      </select>
-                      :
-                      null
+                    headings.map((heading) => {
+                      return <td key={heading.dataProperty}>{rowData[heading.dataProperty]}</td>
+                    })
                   }
-                </td>
-              )
+                </tr>)
             })
           }
-        </tr>
-      </tbody>
-
-      <tbody>
-        {
-          filteredRows?.map((rowData) => {
-            return (
-              <tr key={rowData.id} className="table-row">
-                {
-                  headings.map((heading) => {
-                    return <td key={heading.dataProperty}>{rowData[heading.dataProperty]}</td>
-                  })
-                }
-              </tr>)
-          })
-        }
-      </tbody>
-    </table>
+        </tbody>
+      </table>
+    </div>
   );
 }
 export default Table;
