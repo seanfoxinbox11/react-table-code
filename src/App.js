@@ -10,7 +10,7 @@ import './components/Table.css';
 * so that it is customizable and not hard coded for the code challenge.
 */
 const headingData = [
-  { dataProperty: "name", isFilterable: false, isSearchable: true, sortBy: true},
+  { dataProperty: "name", isFilterable: false, isSearchable: true, sortBy: true },
   { dataProperty: "city", isFilterable: false, isSearchable: true, },
   { dataProperty: "state", isFilterable: true },
   { dataProperty: "telephone", isFilterable: false },
@@ -18,27 +18,24 @@ const headingData = [
   { dataProperty: "attire", isFilterable: true },
 ];
 
-const urlInfo = {url: 'https://code-challenge.spectrumtoolbox.com/api/restaurants', authorization: 'Api-Key q3MNxtfep8Gt'};
+const urlInfo = { url: 'https://code-challenge.spectrumtoolbox.com/api/restaurants', authorization: 'Api-Key q3MNxtfep8Gt' };
 
 
 function App() {
 
   const [restaurants, setRestaurants] = useState(null);
   const [searchText, setSearchText] = useState("");
- // const [filtersEnabled, setFiltersEnabled] = useState(true);
 
-
-
-  useEffect(() => {      
-      // Load restaurant data
-      fetch(urlInfo.url, {
-        headers: {
-          Authorization: urlInfo.authorization,
-        },
-      })
+  useEffect(() => {
+    // Load restaurant data
+    fetch(urlInfo.url, {
+      headers: {
+        Authorization: urlInfo.authorization,
+      },
+    })
       .then((response) => response.json())
       .then((restaurants) => {
-        setRestaurants(restaurants);     
+        setRestaurants(restaurants);
       })
       .catch((err) => {
         console.log(err);
@@ -55,13 +52,13 @@ function App() {
 
   return (
     <div className="table-container">
-      <TextFieldSubmit submitCallback={onSearchSubmit} /> 
-      
-      <Table 
-        headingData={headingData} 
-        rows={restaurants} 
-        filterText={searchText} 
-        />
+      <TextFieldSubmit submitCallback={onSearchSubmit} />
+
+      <Table
+        headingData={headingData}
+        rows={restaurants}
+        filterText={searchText}
+      />
     </div>
   );
 }
@@ -118,27 +115,24 @@ export default App;
 
 
 
-//enabled disabled drop downs
-
-
- 
-
-
-//left and right buttons as icons and dissapear when nothing to paginate
 
 
 
 
 
 
-// 3 talres for the price of 1
+
+
+
+// QA functionality per bullet at the end, qa code for mutation and dependencies
+
 
 
 // put comments at the bottom here saying which featur bullets are included
 // Clean/ Comment
-// Clean up and comment anything that change on monday
+
 // • Full Git history with atomic commits
 // • Deployed application
-// QA functionality per bullet at the end, qa code for mutation and dependencies
+
 
 /////////////////////////

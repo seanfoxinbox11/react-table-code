@@ -21,10 +21,6 @@
   padding: 5 10;
 }
 
-.table-container table thead tr.filters {
-  padding: 0px;
-}
-
 .table-container table thead tr td {
   padding: 4px 10px;
 }
