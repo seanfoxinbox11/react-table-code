@@ -7,13 +7,18 @@ import './Table.css';
 */
 function Table(props) {
 
-  const { headingData, rows, filterText, filtersEnabled } = props;
+  const { headingData, rows, filterText } = props;
   const [headings, setHeadings] = useState(null);
   const [filteredRows, setFilteredRows] = useState(null);
   const [filterOptions, setFilterOptions] = useState(null);
 
+
+  const [filterEnabled, setFilterEnabled] = useState(null);
+
   const [pagination, setPagination] = useState(1);
   const [filteredRowsLength, setFilteredRowsLength] = useState(0);
+  const [filterHeadingsEnabled, setFilterHeadingsEnabled] = useState(0);
+
 
   const resultMax = 10;
   const [filter, setFilter] = useState({
@@ -33,9 +38,28 @@ function Table(props) {
       const includedHeadings = headingData.filter((headingData) => {
         return !!headingKeys.find(key => headingData.dataProperty === key);
       });
+      //console.log("includedHeadings",includedHeadings);
+
       setHeadings(includedHeadings);
     }
-  }, [rows]);
+  }, [rows, headingData]);
+
+
+  useEffect(() => {
+    //console.log("headings", headings)
+    //setFilterableHeadings(headings?.filter(heading => heading.isFilterable));
+    const filterableHeadings = headings?.filter(heading => heading.isFilterable);
+
+    const filtersEnabled = {};
+      if (filterableHeadings) {      
+          filterableHeadings.forEach(({ dataProperty }) => {
+            filtersEnabled[dataProperty] = true;
+          });  
+      }
+    
+    setFilterHeadingsEnabled(filtersEnabled);
+
+  }, [headings]);
 
 
 
@@ -50,10 +74,12 @@ function Table(props) {
         let filterDefaults = {};
         filterableHeadings.forEach(({ dataProperty }) => {
           if (!filter[dataProperty]) filterDefaults[dataProperty] = defaultFilterOptionValue;
-        });
+        });       
         return { ...filter, ...filterDefaults };
       });
     }
+
+
 
     // Set filter option values
     let filterOptions = {};
@@ -79,16 +105,15 @@ function Table(props) {
 
   useEffect(() => {
 
+
     const filterableHeadings = headings?.filter(heading => heading.isFilterable);
+
+    if (!filterableHeadings) { return }
 
     if (!headings || !rows || !filter || !filter[filterableHeadings[0].dataProperty]) return; // escape useEffect
 
     const sortedRows = getSortedRows(rows, headings, 1);
     let filteredRows = sortedRows?.filter(rowData => {
-      if (!filtersEnabled) {
-        return true;
-      }
-
       const searchableHeadings = headings?.filter(heading => heading.isSearchable);
       const filterTextToLower = searchableHeadings?.length && filter.text.toLowerCase().trim();
       if (filterTextToLower) {
@@ -108,7 +133,7 @@ function Table(props) {
         const { dataProperty } = heading;
         const filterValue = filter[dataProperty];
 
-        if (filterValue != defaultFilterOptionValue) {
+        if (filterValue != defaultFilterOptionValue && filterHeadingsEnabled[dataProperty]) {
           const cellValues = rowData[dataProperty].split(',');
           const matches = cellValues.find(cellValue => cellValue.toLowerCase() === filterValue.toLowerCase());
           if (!matches) {
@@ -130,9 +155,11 @@ function Table(props) {
 
     setFilteredRows(paginatedRows);
 
-  }, [rows, headings, filter, filtersEnabled, pagination]);
+  }, [rows, headings, filter, pagination, filterHeadingsEnabled]);
 
 
+
+  
   /** 
   * Updates the text property on filter state property
   */
@@ -187,7 +214,7 @@ function Table(props) {
   */
   const applyFilter = (event, dataProperty) => {
 
-    console.log(dataProperty)
+    //console.log(dataProperty)
     setFilter(argFilter => ({
       ...argFilter,
       [dataProperty]: event.target.value
@@ -207,13 +234,40 @@ function Table(props) {
   }
 
 
+  
+  /** 
+  * WRONG /////////////////////Updates the filtersEnabled in the state with the checked value from the checkbox input
+  */
+  const onFiltersCheckBoxChange = (dataProperty) => {
+    return (event) => {
+      
+    
+      console.log("event.target.checked", event.target.checked)
+      console.log("dataProperty", dataProperty)
+ 
+      setFilterHeadingsEnabled(filterHeadingsEnabled => ({
+        ...filterHeadingsEnabled, [dataProperty]: event.target.checked
+        })
+      )
+
+    }
+  }
+
   // • A user should be able to see a table with the name, city, state, phone number, and genres for each restaurant.
+
+
+  
+  //{console.log("filterHeadingsEnabled Console", filterHeadingsEnabled)}
+
 
   return (
     <div>
       <button onClick={onPaginationButtonClick(-1)}>Left</button>
       <button onClick={onPaginationButtonClick(1)}>Right</button>
-
+      
+     
+     
+      
       <table>
         <thead>
           <tr className="table-heading">
@@ -232,8 +286,8 @@ function Table(props) {
                 return (
                   <td key={dataProperty}>
                     {
-                      isFilterable && filter[dataProperty] && filtersEnabled ?
-
+                      isFilterable && filter[dataProperty] ?
+                        <div>
                         <select value={filter[dataProperty]} onChange={(event) => { applyFilter(event, dataProperty) }}>
                           {
                             filterOptions && filterOptions[dataProperty]?.map((option) => {
@@ -241,6 +295,14 @@ function Table(props) {
                             })
                           }
                         </select>
+                        
+                         <input 
+                           type="checkbox"
+                           checked={filterHeadingsEnabled[dataProperty]}
+                           onChange={onFiltersCheckBoxChange(dataProperty)}
+                           /> 
+                        </div>
+                     
                         :
                         null
                     }

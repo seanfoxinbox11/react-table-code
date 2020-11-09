@@ -24,7 +24,7 @@ function App() {
 
   const [restaurants, setRestaurants] = useState(null);
   const [searchText, setSearchText] = useState("");
-  const [filtersEnabled, setFiltersEnabled] = useState(true);
+ // const [filtersEnabled, setFiltersEnabled] = useState(true);
 
 
 
@@ -52,31 +52,16 @@ function App() {
     setSearchText(text);
   }
 
-  /** 
-  * Updates the filtersEnabled in the state with the checked value from the checkbox input
-  */
-  const onFiltersCheckBoxChange = (event) => {
-    setFiltersEnabled(event.target.checked);
-  }
 
 
   return (
     <div>
       <TextFieldSubmit submitCallback={onSearchSubmit} /> 
-      <label>
-        <input 
-          type="checkbox" 
-          checked={filtersEnabled} 
-          onChange={onFiltersCheckBoxChange}
-          /> 
-          Enable Filters 
-      </label>
       
       <Table 
         headingData={headingData} 
         rows={restaurants} 
         filterText={searchText} 
-        filtersEnabled={filtersEnabled}
         />
     </div>
   );
@@ -134,11 +119,8 @@ export default App;
 
 
 
-// fix shutting off filters makes it so search does not calculate
 
-// perhaps each filet drop down should have its own check box as well
-  // • A user should be able to combine filters and search. The user should be able to turn filters on and off while a
-  // search value is present.
+ 
 
 // • If any of the filters do not return any restaurants, the UI should indicate that no results were found.
 
