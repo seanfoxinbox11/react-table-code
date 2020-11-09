@@ -94,6 +94,8 @@ export default App;
 // • A user should be able to enter text into a search field. When hitting the enter key or clicking on a search
 // button, the table should search results. Search results should match either the name, city, or genre.
 // • A user should be able to clear the search by clearing the text value in the search input.
+//• A user should be able to combine filters and search. The user should be able to turn filters on and off while a
+  // search value is present.
 
 // What we are looking for:
 // • No use of third-party component libraries for the table/filter/search.
@@ -122,7 +124,7 @@ export default App;
 
  
 
-// • If any of the filters do not return any restaurants, the UI should indicate that no results were found.
+
 
 
 

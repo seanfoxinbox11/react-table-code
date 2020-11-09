@@ -152,7 +152,7 @@ function Table(props) {
     const paginatedRows = filteredRows.slice(paginationStart, paginationEnd);
 
     setFilteredRowsLength(filteredRows.length);
-
+    
     setFilteredRows(paginatedRows);
 
   }, [rows, headings, filter, pagination, filterHeadingsEnabled]);
@@ -240,10 +240,7 @@ function Table(props) {
   */
   const onFiltersCheckBoxChange = (dataProperty) => {
     return (event) => {
-      
-    
-      console.log("event.target.checked", event.target.checked)
-      console.log("dataProperty", dataProperty)
+      // • A user should be able to combine filters and search. The user should be able to turn filters on and off while a search value is present.
  
       setFilterHeadingsEnabled(filterHeadingsEnabled => ({
         ...filterHeadingsEnabled, [dataProperty]: event.target.checked
@@ -255,8 +252,11 @@ function Table(props) {
 
   // • A user should be able to see a table with the name, city, state, phone number, and genres for each restaurant.
 
-
+// • If any of the filters do not return any restaurants, the UI should indicate that no results were found.
   
+
+
+
   //{console.log("filterHeadingsEnabled Console", filterHeadingsEnabled)}
 
 
@@ -327,6 +327,14 @@ function Table(props) {
             })
           }
         </tbody>
+
+        <tfoot>        
+        { !filteredRowsLength ? 
+        "No results were found."
+        : 
+        null   
+        }
+        </tfoot>
       </table>
     </div>
   );
