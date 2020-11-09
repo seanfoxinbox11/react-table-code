@@ -217,11 +217,12 @@ function Table(props) {
     return (event) => {
       // • A user should be able to combine filters and search. The user should be able to turn filters on and off while a search value is present.
 
+      setPagination(1);
+      
       setFilterHeadingsEnabled(filterHeadingsEnabled => ({
         ...filterHeadingsEnabled, [dataProperty]: event.target.checked
       })
       )
-
     }
   }
 

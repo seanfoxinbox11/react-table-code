@@ -22,6 +22,7 @@
 }
 
 .table-container table thead tr td {
+  width: 300px;
   padding: 4px 10px;
 }
 
