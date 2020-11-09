@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import Table from './components/Table';
 import TextFieldSubmit from './components/TextFieldSubmit';
+import './components/Table.css';
 
 
 /** 
@@ -52,10 +53,8 @@ function App() {
     setSearchText(text);
   }
 
-
-
   return (
-    <div>
+    <div className="table-container">
       <TextFieldSubmit submitCallback={onSearchSubmit} /> 
       
       <Table 
@@ -119,17 +118,18 @@ export default App;
 
 
 
-
+//enabled disabled drop downs
 
 
  
 
 
+//left and right buttons as icons and dissapear when nothing to paginate
 
 
 
 
-// css enhancements
+
 
 // 3 talres for the price of 1
 

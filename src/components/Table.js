@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react';
-import './Table.css';
 
 /** 
 * Table functional component
@@ -262,25 +261,16 @@ function Table(props) {
 
   return (
     <div>
-      <button onClick={onPaginationButtonClick(-1)}>Left</button>
-      <button onClick={onPaginationButtonClick(1)}>Right</button>
-      
-     
-     
-      
-      <table>
+     <table>
         <thead>
-          <tr className="table-heading">
+          <tr>
             {
               headings?.map((heading) => {
                 return <td key={heading.dataProperty}>{heading.dataProperty}</td>
               })
             }
           </tr>
-        </thead>
-
-        <tbody>
-          <tr className="table-row">
+          <tr className="filters">
             {
               headings?.map(({ dataProperty, isFilterable }) => {
                 return (
@@ -288,7 +278,7 @@ function Table(props) {
                     {
                       isFilterable && filter[dataProperty] ?
                         <div>
-                        <select value={filter[dataProperty]} onChange={(event) => { applyFilter(event, dataProperty) }}>
+                        <select value={filter[dataProperty]} disabled={!filterHeadingsEnabled[dataProperty]} onChange={(event) => { applyFilter(event, dataProperty) }}>
                           {
                             filterOptions && filterOptions[dataProperty]?.map((option) => {
                               return <option key={option} value={option}>{option}</option>
@@ -311,8 +301,9 @@ function Table(props) {
               })
             }
           </tr>
-        </tbody>
+        </thead>
 
+     
         <tbody>
           {
             filteredRows?.map((rowData) => {
@@ -330,12 +321,16 @@ function Table(props) {
 
         <tfoot>        
         { !filteredRowsLength ? 
-        "No results were found."
+        <tr><td>"No results were found."</td></tr>
         : 
         null   
         }
         </tfoot>
       </table>
+
+      Page {pagination} of {filteredRowsLength / resultMax}
+      <button onClick={onPaginationButtonClick(-1)}>Left</button>
+      <button onClick={onPaginationButtonClick(1)}>Right</button>
     </div>
   );
 }
