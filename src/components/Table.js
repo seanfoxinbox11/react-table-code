@@ -18,6 +18,9 @@ function Table(props) {
     text: "",
   });
 
+  const [sortBy, setSortBy] = useState({ key: "" });
+  const [sortDirection, setSortDirection] = useState(1);
+
   const [pagination, setPagination] = useState(1);
   const resultMax = 10;
 
@@ -25,13 +28,16 @@ function Table(props) {
   * Set table headings when row prop updates
   */
   useEffect(() => {
-    // set headings
-    if (rows) {
+    // set headings  
+    if (rows && headingData) {
+
+      console.log("rows", rows)
+      console.log("headingData", headingData)
       const headingKeys = Object.keys(rows[0]);
       const includedHeadings = headingData.filter((headingData) => {
         return !!headingKeys.find(key => headingData.dataProperty === key);
       });
-      //console.log("includedHeadings",includedHeadings);
+      console.log("includedHeadings", includedHeadings);
 
       setHeadings(includedHeadings);
     }
@@ -39,16 +45,27 @@ function Table(props) {
 
 
   useEffect(() => {
-    const filterableHeadings = headings?.filter(heading => heading.isFilterable);
 
-    const filtersEnabled = {};
+    if (!headings) { return }
+
+    console.log("headings", headings);
+
+    // Set enabled filterable headings
+    const filterableHeadings = headings?.filter(heading => heading.isFilterable);
+    const filterHeadsEnabled = {};
     if (filterableHeadings) {
       filterableHeadings.forEach(({ dataProperty }) => {
-        filtersEnabled[dataProperty] = true;
+        filterHeadsEnabled[dataProperty] = true;
       });
     }
+    setFilterHeadingsEnabled(filterHeadsEnabled);
 
-    setFilterHeadingsEnabled(filtersEnabled);
+
+    // Sort by the default soft property
+    const sortByHeading = headings.find((heading) => {
+      return !!heading.defaultSortBy;
+    });
+    setSortBy({ key: sortByHeading.dataProperty });
 
   }, [headings]);
 
@@ -95,12 +112,16 @@ function Table(props) {
 
     if (!filterableHeadings) { return }
 
+    console.log("rows2", rows)
+    console.log("sortBy", sortBy)
+
     if (!headings || !rows || !filter || !filter[filterableHeadings[0].dataProperty]) return; // escape useEffect
 
-    const sortedRows = getSortedRows(rows, headings, 1);
+    const sortedRows = getSortedRows(rows, sortBy.key, sortDirection);
 
     // • Search results should match either the name, city, or genre.
     // • A user should be able to clear the search by clearing the text value in the search input.
+    // • A user should be able to combine filters and search. 
     let filteredRows = sortedRows?.filter(rowData => {
       const searchableHeadings = headings?.filter(heading => heading.isSearchable);
       const filterTextToLower = searchableHeadings?.length && filter.text.toLowerCase().trim();
@@ -115,6 +136,7 @@ function Table(props) {
       // • A user should be able to filter restaurants by state
       // • A user should be able to filter by genre.
       // • Add filter for attire
+      // • A user should be able to combine filters and search. 
       for (let heading of filterableHeadings) {
         const { dataProperty } = heading;
         const filterValue = filter[dataProperty];
@@ -130,18 +152,15 @@ function Table(props) {
       return true;
     });
 
-
+    // Pagination
     // • A user should only see 10 results at a time and the table should be paginated.
     const paginationStart = (pagination * resultMax) - resultMax;
     const paginationEnd = paginationStart + resultMax;
-
     const paginatedRows = filteredRows.slice(paginationStart, paginationEnd);
-
     setFilteredRowsLength(filteredRows.length);
-
     setFilteredRows(paginatedRows);
 
-  }, [rows, headings, filter, pagination, filterHeadingsEnabled]);
+  }, [rows, headings, filter, pagination, filterHeadingsEnabled, sortBy, sortDirection]);
 
 
   /** 
@@ -162,13 +181,9 @@ function Table(props) {
   * @param {array} rows - row datas to be sorted
   * @param {number} direction - the direction in which to sort the rows take 1 or -1
   */
-  const getSortedRows = (rows, headings, direction) => {
+  const getSortedRows = (rows, sortByKey, direction) => {
     // • A user should see results sorted by name in alphabetical order starting with the beginning of the alphabet
-    const sortByHeading = headings.find((heading) => {
-      return !!heading.sortBy;
-    });
-
-    return getdSortedClonedArray(rows, sortByHeading.dataProperty, direction);
+    return getdSortedClonedArray(rows, sortByKey, direction);
   }
 
   const getdSortedClonedArray = (array, key, direction) => {
@@ -183,7 +198,6 @@ function Table(props) {
       if (valueA > valueB) {
         return direction;
       }
-
       return 0; // the values are equal
     });
   }
@@ -203,7 +217,6 @@ function Table(props) {
 
 
   const onPaginationButtonClick = (direction) => (event) => {
-
     const paginationMin = 1;
     const paginationMax = filteredRowsLength / resultMax;
     const incrementedPagination = pagination + direction;
@@ -215,14 +228,22 @@ function Table(props) {
 
   const onFiltersCheckBoxChange = (dataProperty) => {
     return (event) => {
-      // • A user should be able to combine filters and search. The user should be able to turn filters on and off while a search value is present.
-
+      // • The user should be able to turn filters on and off while a search value is present.
       setPagination(1);
-      
+
       setFilterHeadingsEnabled(filterHeadingsEnabled => ({
         ...filterHeadingsEnabled, [dataProperty]: event.target.checked
       })
       )
+    }
+  }
+
+  // • User can sort the data by name and state
+  const onSortClick = (dataProperty) => {
+    return (event) => {
+
+      setSortBy({ key: dataProperty });
+      setSortDirection(-sortDirection);
     }
   }
 
@@ -244,7 +265,7 @@ function Table(props) {
           </tr>
           <tr>
             {
-              headings?.map(({ dataProperty, isFilterable }) => {
+              headings?.map(({ dataProperty, isFilterable, isSortable }) => {
                 return (
                   <td key={dataProperty}>
                     {
@@ -267,6 +288,13 @@ function Table(props) {
                         :
                         null
                     }
+
+                    {
+                      isSortable ?
+                        <button onClick={onSortClick(dataProperty)}>Sort</button>
+                        :
+                        null
+                    }
                   </td>
                 )
               })
@@ -278,7 +306,7 @@ function Table(props) {
           {
             filteredRows?.map((rowData) => {
               return (
-                <tr key={rowData.id} className="table-row">
+                <tr key={rowData.id}>
                   {
                     headings.map((heading) => {
                       return <td key={heading.dataProperty}><span>{rowData[heading.dataProperty]}</span></td>
@@ -298,10 +326,10 @@ function Table(props) {
 
           {
             numberOfPages > 1 ?
-              <div>
+              <tr><td>
                 Page {pagination} of {numberOfPages} <button onClick={onPaginationButtonClick(-1)}>Previous</button>
                 <button onClick={onPaginationButtonClick(1)}>Next</button>
-              </div>
+              </td></tr>
               :
               null
           }

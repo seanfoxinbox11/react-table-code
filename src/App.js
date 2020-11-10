@@ -10,12 +10,12 @@ import './components/Table.css';
 * so that it is customizable and not hard coded for the code challenge.
 */
 const headingData = [
-  { dataProperty: "name", isFilterable: false, isSearchable: true, sortBy: true },
-  { dataProperty: "city", isFilterable: false, isSearchable: true, },
-  { dataProperty: "state", isFilterable: true },
-  { dataProperty: "telephone", isFilterable: false },
-  { dataProperty: "genre", isFilterable: true, isSearchable: true, },
-  { dataProperty: "attire", isFilterable: true },
+  { dataProperty: "name", isFilterable: false, isSearchable: true, isSortable: true, defaultSortBy: true},
+  { dataProperty: "city", isFilterable: false, isSearchable: true, isSortable: false},
+  { dataProperty: "state", isFilterable: true, isSearchable: false, isSortable: true},
+  { dataProperty: "telephone", isFilterable: false, isSearchable: false, isSortable: false},
+  { dataProperty: "genre", isFilterable: true, isSearchable: true, isSortable: false},
+  { dataProperty: "attire", isFilterable: true, isSearchable: false, isSortable: false},
 ];
 
 const urlInfo = { url: 'https://code-challenge.spectrumtoolbox.com/api/restaurants', authorization: 'Api-Key q3MNxtfep8Gt' };
@@ -36,6 +36,8 @@ function App() {
       .then((response) => response.json())
       .then((restaurants) => {
         setRestaurants(restaurants);
+
+        console.log(restaurants);
       })
       .catch((err) => {
         console.log(err);
