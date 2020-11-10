@@ -24,6 +24,13 @@
 
 .table-container table thead tr td {
   padding: 4px 10px;
+  max-width: 200px; 
+  min-width: 200px;
+}
+
+.table-container table thead tr td select {
+  max-width: 125px; 
+  min-width: 125px;
 }
 
 .table-container table thead tr td div {
