@@ -281,7 +281,7 @@ function Table(props) {
                 <tr key={rowData.id} className="table-row">
                   {
                     headings.map((heading) => {
-                      return <td key={heading.dataProperty}>{rowData[heading.dataProperty]}</td>
+                      return <td key={heading.dataProperty}><span>{rowData[heading.dataProperty]}</span></td>
                     })
                   }
                 </tr>)

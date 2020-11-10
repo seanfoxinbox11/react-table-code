@@ -5,6 +5,7 @@
 }
 
 .table-container table {
+  table-layout: fixed;
   border-collapse: collapse;
   text-align: left; 
   color: #333333;
@@ -22,7 +23,8 @@
 }
 
 .table-container table thead tr td {
-  width: 300px;
+  max-width: 200px; 
+  min-width: 200px; 
   padding: 4px 10px;
 }
 
@@ -52,4 +54,5 @@
 .table-container table tbody tr td {
   padding: 5px 10px;
   border-right: 1px solid #dddddd;
+  word-wrap:break-word;
 }
