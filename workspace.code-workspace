@@ -1,0 +1,14 @@
+{
+	"folders": [
+		{
+			"path": "."
+		},
+		{
+			"path": "..\\reunion-manager"
+		},
+		{
+			"path": "..\\reunion-manager\\src"
+		}
+	],
+	"settings": {}
+}

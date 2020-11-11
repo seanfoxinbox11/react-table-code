@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 /** 
 * Table functional component
@@ -17,12 +17,14 @@ function Table(props) {
   const [filter, setFilter] = useState({
     text: "",
   });
-
+  
   const [sortBy, setSortBy] = useState({ key: "" });
   const [sortDirection, setSortDirection] = useState(1);
 
   const [pagination, setPagination] = useState(1);
   const resultMax = 10;
+
+  const filterableHeadings = useMemo(() => headings?.filter(heading => heading.isFilterable), [headings]);
 
   /** 
   * Set table headings when row prop updates
@@ -51,7 +53,6 @@ function Table(props) {
     console.log("headings", headings);
 
     // Set enabled filterable headings
-    const filterableHeadings = headings?.filter(heading => heading.isFilterable);
     const filterHeadsEnabled = {};
     if (filterableHeadings) {
       filterableHeadings.forEach(({ dataProperty }) => {
@@ -70,9 +71,9 @@ function Table(props) {
   }, [headings]);
 
 
-  useEffect(() => {
-    const filterableHeadings = headings?.filter(heading => heading.isFilterable);
+ 
 
+  useEffect(() => {
     // Set Filter options default values
     // • State and Genre filters should default to “All” and take effect instantaneously (no additional clicks).
     if (filterableHeadings && !filter[filterableHeadings[0].dataProperty]) {
@@ -108,8 +109,6 @@ function Table(props) {
 
 
   useEffect(() => {
-    const filterableHeadings = headings?.filter(heading => heading.isFilterable);
-
     if (!filterableHeadings) { return }
 
     console.log("rows2", rows)
