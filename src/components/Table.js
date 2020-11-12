@@ -47,7 +47,6 @@ function Table(props) {
 
 
   useEffect(() => {
-
     if (!headings) { return }
 
     console.log("headings", headings);
@@ -68,7 +67,7 @@ function Table(props) {
     });
     setSortBy({ key: sortByHeading.dataProperty });
 
-  }, [headings]);
+  }, [headings, filterableHeadings]);
 
 
  
@@ -105,7 +104,7 @@ function Table(props) {
     });
 
     setFilterOptions(filterOptions);
-  }, [rows, headings]);
+  }, [rows, headings, filterableHeadings]);
 
 
   useEffect(() => {
@@ -159,7 +158,7 @@ function Table(props) {
     setFilteredRowsLength(filteredRows.length);
     setFilteredRows(paginatedRows);
 
-  }, [rows, headings, filter, pagination, filterHeadingsEnabled, sortBy, sortDirection]);
+  }, [rows, headings, filter, pagination, filterableHeadings, filterHeadingsEnabled, sortBy, sortDirection]);
 
 
   /** 
